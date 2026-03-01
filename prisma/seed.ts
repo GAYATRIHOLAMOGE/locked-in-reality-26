@@ -4,153 +4,93 @@ import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const connectionString = process.env.DATABASE_URL;
-
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const db = new PrismaClient({ adapter });
 
 async function main() {
+    console.log("🌱 Seeding puzzles...");
+
     // Clear existing data
-    await prisma.submission.deleteMany();
-    await prisma.team.deleteMany();
-    await prisma.question.deleteMany();
-    await prisma.puzzle.deleteMany();
-    await prisma.gameSettings.deleteMany();
+    await db.submission.deleteMany();
+    await db.puzzle.deleteMany();
 
-    // Create Game Settings
-    const now = new Date();
-
-    // Helper to set time for today
-    const setTime = (h: number, m: number) => {
-        const d = new Date(now);
-        d.setHours(h, m, 0, 0);
-        return d;
-    };
-
-    await prisma.gameSettings.create({
-        data: {
-            id: "config",
-            round1Start: setTime(9, 30),
-            round1End: setTime(10, 30),
-            round2Start: setTime(11, 0),
-            round2End: setTime(13, 0),
-        }
-    });
-
-    // Create Questions with Options
-    // Create Questions with Options
-    const q1 = await prisma.question.create({
-        data: {
-            id: "q1-l1",
-            content: "What is the capital of France?",
-            level: 1,
-            points: 10,
-            options: {
-                create: [
-                    { content: "London", isCorrect: false },
-                    { content: "Berlin", isCorrect: false },
-                    { content: "Paris", isCorrect: true },
-                    { content: "Madrid", isCorrect: false },
-                ]
-            }
+    const puzzles = [
+        {
+            name: "Caesar's Secret",
+            description:
+                "Every letter in this message has been shifted three positions forward in the alphabet. Decode it to find the answer.\n\n'ORFNHG LQ UHDOLWB'",
+            solution: "locked in reality",
+            hint: "Julius Caesar used this cipher. Shift each letter BACK by 3 positions.",
+            hintCost: 10,
+            points: 40,
+            order: 1,
         },
-    });
-
-    const q2 = await prisma.question.create({
-        data: {
-            id: "q2-l1",
-            content: "What is 2 + 2?",
-            level: 1,
-            points: 10,
-            options: {
-                create: [
-                    { content: "3", isCorrect: false },
-                    { content: "4", isCorrect: true },
-                    { content: "5", isCorrect: false },
-                    { content: "22", isCorrect: false },
-                ]
-            }
-        },
-    });
-
-    const q3 = await prisma.question.create({
-        data: {
-            id: "q3-l2",
-            content: "Which language runs in the browser?",
-            level: 2,
+        {
+            name: "The Missing Number",
+            description:
+                "Find the next number in this sequence:\n\n1, 1, 2, 3, 5, 8, 13, 21, ___",
+            solution: "34",
+            hint: "Each number is the sum of the two preceding numbers.",
+            hintCost: 5,
             points: 20,
-            options: {
-                create: [
-                    { content: "Java", isCorrect: false },
-                    { content: "C++", isCorrect: false },
-                    { content: "Python", isCorrect: false },
-                    { content: "JavaScript", isCorrect: true },
-                ]
-            }
-        }
-    });
-
-    const q4 = await prisma.question.create({
-        data: {
-            id: "q4-l3",
-            content: "What does HTML stand for?",
-            level: 3,
+            order: 2,
+        },
+        {
+            name: "Binary Whisper",
+            description:
+                "Translate this binary message to ASCII text:\n\n01101011 01100101 01111001",
+            solution: "key",
+            hint: "Convert each 8-bit group to its decimal value, then find the ASCII character.",
+            hintCost: 15,
+            points: 60,
+            order: 3,
+        },
+        {
+            name: "The Riddle of Doors",
+            description:
+                "I have cities, but no houses live there. I have mountains, but no trees grow there. I have water, but no fish swim there. I have roads, but no cars drive there. What am I?",
+            solution: "a map",
+            hint: "Think about something that represents the real world without being part of it.",
+            hintCost: 10,
             points: 30,
-            options: {
-                create: [
-                    { content: "Hyper Text Preprocessor", isCorrect: false },
-                    { content: "Hyper Text Markup Language", isCorrect: true },
-                    { content: "Hyper Tool Multi Language", isCorrect: false },
-                    { content: "Home Tool Markup Language", isCorrect: false },
-                ]
-            }
-        }
-    });
+            order: 4,
+        },
+        {
+            name: "Hex Grid",
+            description:
+                "Decode this hexadecimal string to find a hidden word:\n\n52 65 61 6C 69 74 79",
+            solution: "reality",
+            hint: "Convert each hex pair to its decimal ASCII value and read the resulting characters.",
+            hintCost: 15,
+            points: 60,
+            order: 5,
+        },
+        {
+            name: "The Shadow Equation",
+            description:
+                "Solve for X:\n\nIf LOCK = 40, and LOCK + IN = 65, and IN + REALITY = 105,\nthen REALITY = ?",
+            solution: "65",
+            hint: "Treat each word as a number. Set up equations: LOCK=40, IN=25, REALITY=?",
+            hintCost: 20,
+            points: 80,
+            order: 6,
+        },
+    ];
 
+    for (const puzzle of puzzles) {
+        await db.puzzle.create({ data: puzzle });
+        console.log(`  ✅ Created puzzle: ${puzzle.name}`);
+    }
 
-    // Create Puzzles
-    await prisma.puzzle.createMany({
-        data: [
-            {
-                id: "puz-1",
-                name: "The Cipher",
-                description: "Decrypt the following message: ...",
-                solution: "secret",
-                points: 50
-            },
-            {
-                id: "puz-2",
-                name: "Image Hunt",
-                description: "Find the hidden key in this image...",
-                solution: "key123",
-                points: 50
-            },
-            {
-                id: "puz-3",
-                name: "Logic Grid",
-                description: "Who lives in the red house?",
-                solution: "The Englishman",
-                points: 50
-            },
-            {
-                id: "puz-4",
-                name: "Final Boss",
-                description: "Combine all clues...",
-                solution: "victory",
-                points: 100
-            }
-        ]
-    });
-
-    console.log("Seeding complete.");
+    console.log("\n✨ Seed complete!");
 }
 
 main()
-    .then(async () => {
-        await prisma.$disconnect();
-    })
-    .catch(async (e) => {
+    .catch((e) => {
         console.error(e);
-        await prisma.$disconnect();
         process.exit(1);
+    })
+    .finally(async () => {
+        await db.$disconnect();
     });

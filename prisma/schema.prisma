@@ -13,46 +13,9 @@ model Team {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  currentRound Int @default(1)
-  currentLevel Int @default(1)
-
   score Int @default(0)
 
-  round1CompletedAt DateTime?
-  round2CompletedAt DateTime?
-
   submissions Submission[]
-}
-
-model Question {
-  id      String @id @default(dbgenerated("gen_random_uuid()"))
-  content String
-  level   Int // 1, 2, 3
-  points  Int    @default(10)
-
-  options     Option[]
-  submissions Submission[]
-}
-
-model Option {
-  id        String  @id @default(dbgenerated("gen_random_uuid()"))
-  content   String
-  isCorrect Boolean @default(false)
-
-  questionId String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  submissions Submission[]
-}
-
-model GameSettings {
-  id String @id @default(dbgenerated("gen_random_uuid()"))
-
-  round1Start DateTime
-  round1End   DateTime
-
-  round2Start DateTime
-  round2End   DateTime
 }
 
 model Puzzle {
@@ -60,7 +23,10 @@ model Puzzle {
   name        String
   description String
   solution    String
+  hint        String
+  hintCost    Int    @default(10)
   points      Int    @default(50)
+  order       Int    @default(0)
 
   submissions Submission[]
 }
@@ -71,16 +37,11 @@ model Submission {
   teamId String
   team   Team   @relation(fields: [teamId], references: [id])
 
-  questionId String?
-  question   Question? @relation(fields: [questionId], references: [id])
-
   puzzleId String?
   puzzle   Puzzle? @relation(fields: [puzzleId], references: [id])
 
-  optionId String?
-  option   Option? @relation(fields: [optionId], references: [id])
-
-  answer    String? // Keep for puzzle answers
+  answer    String?
   isCorrect Boolean
+  isHint    Boolean  @default(false)
   timestamp DateTime @default(now())
 }
