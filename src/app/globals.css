@@ -1,40 +1,132 @@
+@import url("https://fonts.googleapis.com/css?family=Press+Start+2P");
 @import "tailwindcss";
 
 :root {
-  --background: #0f172a; /* Slate 900 */
-  --foreground: #f8fafc; /* Slate 50 */
-  --primary: #8b5cf6; /* Violet 500 */
-  --secondary: #10b981; /* Emerald 500 */
-  --accent: #f43f5e; /* Rose 500 */
+  /* Terminal Green Palette */
+  --green-primary: #54FE55;
+  --green-glow-strong: #54FE55;
+  --green-glow-mid: #54FE5588;
+  --green-glow-soft: #54FE5544;
+  --green-dim: #2ecc2f;
+  --green-dark: #1a7a1b;
+  --green-darker: #0d3d0e;
+  --green-muted: #54FE5533;
+
+  /* Background */
+  --bg-base: #000000;
+  --bg-grid: rgba(84, 254, 85, 0.1);
+
+  /* Text shadows / glows */
+  --glow-text: 0 0 10px var(--green-glow-strong), 0 0 30px var(--green-glow-mid), 0 0 60px var(--green-glow-soft);
+  --glow-soft: 0 0 8px var(--green-glow-mid);
+  --glow-strong: 0 0 20px var(--green-glow-strong), 0 0 40px var(--green-glow-mid);
+  --glow-border: 0 0 8px var(--green-glow-soft);
 }
 
+@theme inline {
+  --color-green-primary: var(--green-primary);
+  --color-green-dim: var(--green-dim);
+  --color-green-dark: var(--green-dark);
+  --color-green-darker: var(--green-darker);
+  --color-green-muted: var(--green-muted);
+  --color-bg-base: var(--bg-base);
+}
+
+/* ─── Base ─────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
+  height: 100%;
+  margin: 0;
+  background-color: var(--bg-base);
+  color: var(--green-primary);
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+/* ─── Utility classes ───────────────────────────────────── */
+
+/* Text colors */
+.text-terminal        { color: var(--green-primary); }
+.text-terminal-dim    { color: var(--green-dim); }
+.text-terminal-dark   { color: var(--green-dark); }
+.text-terminal-muted  { color: var(--green-muted); }
+
+/* Glow effects */
+.glow-text    { text-shadow: var(--glow-text); }
+.glow-soft    { text-shadow: var(--glow-soft); }
+.glow-strong  { text-shadow: var(--glow-strong); }
+
+/* Box glows */
+.glow-box         { box-shadow: var(--glow-border); }
+.glow-box-strong  { box-shadow: var(--glow-strong); }
+
+/* Borders */
+.border-terminal  { border-color: var(--green-primary); }
+.border-terminal-dim { border-color: var(--green-dim); }
+
+/* Backgrounds */
+.bg-terminal-muted  { background-color: var(--green-muted); }
+.bg-terminal-darker { background-color: var(--green-darker); }
+
+/* CRT scanlines overlay */
+.scanlines::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
 }
 
-@layer utilities {
-  .text-shadow {
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-  }
-  .glow {
-    filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.5));
-  }
+/* Vignette overlay */
+.vignette::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+/* Terminal grid background */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Blinking cursor */
+.cursor-blink::after {
+  content: "_";
+  animation: blink 1s step-start infinite;
+}
+
+/* ─── Keyframes ─────────────────────────────────────────── */
+@keyframes blink {
+  0%, 49% { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}
+
+@keyframes flicker {
+  0%   { opacity: 1; }
+  92%  { opacity: 1; }
+  93%  { opacity: 0.6; }
+  94%  { opacity: 1; }
+  96%  { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.animate-flicker {
+  animation: flicker 6s infinite;
 }
