@@ -12,11 +12,15 @@ export default function Dashboard() {
     const [teamId, setTeamId] = useState<string | null>(null);
     const [teamName, setTeamName] = useState<string | null>(null);
 
+    const getPuzzleSlug = (name: string, id: string) => {
+        return id; // backend now returns slug as ID
+    };
+
     useEffect(() => {
         const id = localStorage.getItem("teamId");
         const name = localStorage.getItem("teamName");
         if (!id) {
-            router.push("/pakka-real-login");
+            router.push("/pakka-real-login-trust-me");
         } else {
             setTeamId(id);
             setTeamName(name);
@@ -36,7 +40,7 @@ export default function Dashboard() {
     const handleLogout = () => {
         localStorage.removeItem("teamId");
         localStorage.removeItem("teamName");
-        router.push("/pakka-real-login");
+        router.push("/pakka-real-login-trust-me");
     };
 
     if (!teamId || isLoading) {
@@ -59,7 +63,7 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 bg-[url('/afraid.jpg')] bg-cover bg-center bg-fixed text-slate-200">
+        <div className="min-h-screen bg-[url('/afraid.jpg')] bg-cover bg-center bg-fixed text-slate-200">
             {/* Header */}
             <header className="border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -99,7 +103,7 @@ export default function Dashboard() {
                         {puzzles?.map((puzzle, index) => (
                             <div
                                 key={puzzle.id}
-                                className={`relative group overflow-hidden rounded-2xl border ${puzzle.solved ? 'border-green-500/30 bg-green-500/5' : 'border-slate-800/80 bg-slate-900/50'} backdrop-blur-md p-5 transition-all hover:border-violet-500/50 block`}
+                                className={`relative group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-md p-5 transition-all hover:border-violet-500/50 block`}
                             >
                                 {/* Glow effect */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -129,7 +133,7 @@ export default function Dashboard() {
 
                                     <div className="mt-auto pt-4 border-t border-slate-800/80 group-hover:border-violet-500/30 transition-colors">
                                         <Link
-                                            href={`/puzzle/${puzzle.id}`}
+                                            href={`/puzzle/${getPuzzleSlug(puzzle.name, puzzle.id)}`}
                                             className="flex items-center justify-between w-full group/btn"
                                         >
                                             <span className="text-sm font-medium text-slate-300 group-hover/btn:text-white transition-colors">

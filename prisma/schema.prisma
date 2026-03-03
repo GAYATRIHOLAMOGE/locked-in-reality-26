@@ -15,33 +15,21 @@ model Team {
 
   score Int @default(0)
 
-  submissions Submission[]
+  puzzleStatuses TeamPuzzleStatus[]
 }
 
-model Puzzle {
-  id          String @id @default(dbgenerated("gen_random_uuid()"))
-  name        String
-  description String
-  solution    String
-  hint        String
-  hintCost    Int    @default(10)
-  points      Int    @default(50)
-  order       Int    @default(0)
-
-  submissions Submission[]
-}
-
-model Submission {
+model TeamPuzzleStatus {
   id String @id @default(dbgenerated("gen_random_uuid()"))
 
   teamId String
   team   Team   @relation(fields: [teamId], references: [id])
 
-  puzzleId String?
-  puzzle   Puzzle? @relation(fields: [puzzleId], references: [id])
+  puzzleSlug String
 
-  answer    String?
-  isCorrect Boolean
-  isHint    Boolean  @default(false)
-  timestamp DateTime @default(now())
+  isSolved    Boolean   @default(false)
+  solvedAt    DateTime?
+  isHintTaken Boolean   @default(false)
+
+  @@unique([teamId, puzzleSlug])
+  @@map("team_puzzle_status")
 }

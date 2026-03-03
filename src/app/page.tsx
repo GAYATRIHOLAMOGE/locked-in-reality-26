@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 const GLITCH_CHARS = "!<>-_\\/[]{}—=+*^?#░▒▓█▄▀";
 
-function useGlitch(text, active) {
+function useGlitch(text: string, active: boolean) {
   const [display, setDisplay] = useState(text);
 
   useEffect(() => {

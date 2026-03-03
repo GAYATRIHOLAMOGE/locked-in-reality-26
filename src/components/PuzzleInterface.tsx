@@ -60,7 +60,6 @@ function HintModal({ puzzleName, hintCost, onConfirm, onCancel, loading }: HintM
 type PuzzleCardData = {
     id: string;
     name: string;
-    description: string;
     points: number;
     hintCost: number;
     order: number;
@@ -183,8 +182,8 @@ export default function PuzzleInterface({ teamId, onScoreChange }: PuzzleInterfa
                         <div
                             key={puzzle.id}
                             className={`relative rounded-2xl border overflow-hidden transition-all duration-300 ${puzzle.solved
-                                    ? "bg-emerald-950/20 border-emerald-500/25 shadow-lg shadow-emerald-900/10"
-                                    : "bg-slate-900/50 border-slate-800 hover:border-slate-700"
+                                ? "bg-emerald-950/20 border-emerald-500/25 shadow-lg shadow-emerald-900/10"
+                                : "bg-slate-900/50 border-slate-800 hover:border-slate-700"
                                 }`}
                         >
                             {/* Top bar */}
@@ -209,8 +208,7 @@ export default function PuzzleInterface({ teamId, onScoreChange }: PuzzleInterfa
                                     )}
                                 </div>
 
-                                {/* Description */}
-                                <p className="text-slate-400 text-sm mb-5 leading-relaxed">{puzzle.description}</p>
+
 
                                 {/* Hint section */}
                                 {puzzle.hintUsed && puzzle.hintText ? (

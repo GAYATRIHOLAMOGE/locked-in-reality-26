@@ -2,53 +2,49 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
+const PUZZLES = [
+    {
+        id: "secret-salad",
+        slug: "secret-salad",
+        name: "Secret Salad",
+        solution: "I CAME, I SAW, I CONQUERED",
+        hint: "",
+        hintCost: 5,
+        points: 20,
+        order: 1,
+    },
+    {
+        id: "missing-case-order",
+        slug: "missing-case-order",
+        name: "Missing Case Order",
+        solution: "312105",
+        hint: "Fibonacci sequence",
+        hintCost: 5,
+        points: 40,
+        order: 2,
+    },
+];
+
 export const puzzleRouter = createTRPCRouter({
     getPuzzles: publicProcedure
         .input(z.object({ teamId: z.string() }))
         .query(async ({ ctx, input }) => {
-            const puzzles = await ctx.db.puzzle.findMany({
-                orderBy: { order: "asc" },
+            const puzzleStatuses = await ctx.db.teamPuzzleStatus.findMany({
+                where: { teamId: input.teamId }
             });
 
-            // Get correct submissions for this team
-            const solvedSubmissions = await ctx.db.submission.findMany({
-                where: {
-                    teamId: input.teamId,
-                    isCorrect: true,
-                    isHint: false,
-                    puzzleId: { not: null },
-                },
-                select: { puzzleId: true },
-                distinct: ["puzzleId"],
-            });
+            const solvedSet = new Set(puzzleStatuses.filter(s => s.isSolved).map(s => s.puzzleSlug));
+            const hintSet = new Set(puzzleStatuses.filter(s => s.isHintTaken).map(s => s.puzzleSlug));
 
-            // Get hint usages for this team
-            const hintSubmissions = await ctx.db.submission.findMany({
-                where: {
-                    teamId: input.teamId,
-                    isHint: true,
-                    puzzleId: { not: null },
-                },
-                select: { puzzleId: true, answer: true },
-                distinct: ["puzzleId"],
-            });
-
-            const solvedSet = new Set(solvedSubmissions.map((s) => s.puzzleId));
-            const hintMap = new Map(
-                hintSubmissions.map((s) => [s.puzzleId, s.answer])
-            );
-
-            return puzzles.map((p) => ({
-                id: p.id,
+            return PUZZLES.map((p) => ({
+                id: p.slug, // Use slug as ID for compatibility
                 name: p.name,
-                description: p.description,
                 points: p.points,
                 hintCost: p.hintCost,
                 order: p.order,
-                solved: solvedSet.has(p.id),
-                hintUsed: hintMap.has(p.id),
-                hintText: hintMap.get(p.id) ?? null,
-                // never send solution to client
+                solved: solvedSet.has(p.slug),
+                hintUsed: hintSet.has(p.slug),
+                hintText: hintSet.has(p.slug) ? p.hint : null,
             }));
         }),
 
@@ -56,14 +52,12 @@ export const puzzleRouter = createTRPCRouter({
         .input(
             z.object({
                 teamId: z.string(),
-                puzzleId: z.string(),
+                puzzleId: z.string(), // This will now be the slug
                 answer: z.string(),
             })
         )
         .mutation(async ({ ctx, input }) => {
-            const puzzle = await ctx.db.puzzle.findUnique({
-                where: { id: input.puzzleId },
-            });
+            const puzzle = PUZZLES.find(p => p.slug === input.puzzleId);
 
             if (!puzzle) {
                 throw new TRPCError({
@@ -73,16 +67,16 @@ export const puzzleRouter = createTRPCRouter({
             }
 
             // Check if already solved
-            const alreadySolved = await ctx.db.submission.findFirst({
+            const status = await ctx.db.teamPuzzleStatus.findUnique({
                 where: {
-                    teamId: input.teamId,
-                    puzzleId: input.puzzleId,
-                    isCorrect: true,
-                    isHint: false,
-                },
+                    teamId_puzzleSlug: {
+                        teamId: input.teamId,
+                        puzzleSlug: input.puzzleId,
+                    }
+                }
             });
 
-            if (alreadySolved) {
+            if (status?.isSolved) {
                 return { status: "ALREADY_SOLVED", message: "Already solved!" };
             }
 
@@ -90,15 +84,26 @@ export const puzzleRouter = createTRPCRouter({
                 puzzle.solution.toLowerCase().trim() ===
                 input.answer.toLowerCase().trim();
 
-            await ctx.db.submission.create({
-                data: {
-                    teamId: input.teamId,
-                    puzzleId: input.puzzleId,
-                    answer: input.answer,
-                    isCorrect,
-                    isHint: false,
-                },
-            });
+            if (isCorrect) {
+                await ctx.db.teamPuzzleStatus.upsert({
+                    where: {
+                        teamId_puzzleSlug: {
+                            teamId: input.teamId,
+                            puzzleSlug: input.puzzleId,
+                        }
+                    },
+                    update: {
+                        isSolved: true,
+                        solvedAt: new Date(),
+                    },
+                    create: {
+                        teamId: input.teamId,
+                        puzzleSlug: input.puzzleId,
+                        isSolved: true,
+                        solvedAt: new Date(),
+                    }
+                });
+            }
 
             if (isCorrect) {
                 await ctx.db.team.update({
@@ -114,9 +119,7 @@ export const puzzleRouter = createTRPCRouter({
     useHint: publicProcedure
         .input(z.object({ teamId: z.string(), puzzleId: z.string() }))
         .mutation(async ({ ctx, input }) => {
-            const puzzle = await ctx.db.puzzle.findUnique({
-                where: { id: input.puzzleId },
-            });
+            const puzzle = PUZZLES.find(p => p.slug === input.puzzleId);
 
             if (!puzzle) {
                 throw new TRPCError({
@@ -126,15 +129,16 @@ export const puzzleRouter = createTRPCRouter({
             }
 
             // Check if hint already used
-            const alreadyHinted = await ctx.db.submission.findFirst({
+            const status = await ctx.db.teamPuzzleStatus.findUnique({
                 where: {
-                    teamId: input.teamId,
-                    puzzleId: input.puzzleId,
-                    isHint: true,
-                },
+                    teamId_puzzleSlug: {
+                        teamId: input.teamId,
+                        puzzleSlug: input.puzzleId,
+                    }
+                }
             });
 
-            if (alreadyHinted) {
+            if (status?.isHintTaken) {
                 return {
                     hintText: puzzle.hint,
                     hintCost: 0,
@@ -142,15 +146,19 @@ export const puzzleRouter = createTRPCRouter({
                 };
             }
 
-            // Log hint usage and deduct points
-            await ctx.db.submission.create({
-                data: {
-                    teamId: input.teamId,
-                    puzzleId: input.puzzleId,
-                    answer: puzzle.hint,
-                    isCorrect: false,
-                    isHint: true,
+            await ctx.db.teamPuzzleStatus.upsert({
+                where: {
+                    teamId_puzzleSlug: {
+                        teamId: input.teamId,
+                        puzzleSlug: input.puzzleId,
+                    }
                 },
+                update: { isHintTaken: true },
+                create: {
+                    teamId: input.teamId,
+                    puzzleSlug: input.puzzleId,
+                    isHintTaken: true,
+                }
             });
 
             // Deduct hintCost (don't go below 0)

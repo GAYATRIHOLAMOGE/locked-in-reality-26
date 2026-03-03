@@ -85,8 +85,8 @@ export const adminRouter = createTRPCRouter({
                 });
             }
 
-            // Delete submissions first
-            await ctx.db.submission.deleteMany({
+            // Delete puzzle statuses first
+            await ctx.db.teamPuzzleStatus.deleteMany({
                 where: { teamId: input.teamId },
             });
 
