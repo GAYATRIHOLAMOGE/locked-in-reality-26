@@ -30,7 +30,7 @@ export default function AureaSectioPuzzle() {
         { enabled: !!teamId }
     );
 
-    const puzzle = puzzles?.find(p => p.id === "missing-case-order"); // Using the ID which backend sets to slug
+    const puzzle = puzzles?.find(p => p.id === "case-order"); // Using the ID which backend sets to slug
 
     useEffect(() => {
         if (puzzle?.solved) {

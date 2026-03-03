@@ -102,7 +102,7 @@ export default function SecretSaladPuzzle() {
                     >
                         <ArrowLeft size={16} /> Back
                     </Link>
-                    <p className="text-slate-400 text-sm mb-4">M GEQI, M WE A, M GSRUYIVI</p>
+                    <p className="text-gray-200 text-sm mb-4">M GEQI, M WE A, M GSRUYIVI</p>
                 </div>
 
                 {isSolved ? (
@@ -128,8 +128,8 @@ export default function SecretSaladPuzzle() {
                             <input
                                 type="text"
                                 value={answer}
-                                onChange={(e) => setAnswer(e.target.value)}
-                                className="w-full bg-slate-900 border-2 border-slate-700 focus:border-yellow-500 rounded-xl px-5 py-4 text-white font-mono text-center tracking-widest focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all"
+                                onChange={(e) => setAnswer(e.target.value.toUpperCase())}
+                                className="w-full bg-slate-900 border-2 border-slate-700 focus:border-yellow-500 rounded-xl px-5 py-4 text-white font-mono text-center tracking-widest focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all uppercase"
                                 required
                             />
                         </div>
