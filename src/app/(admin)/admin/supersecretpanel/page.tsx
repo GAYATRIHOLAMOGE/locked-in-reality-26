@@ -5,27 +5,28 @@ import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
 import { Shield, Plus, Trash2, Loader2, Users, Trophy, RefreshCw, LogOut } from "lucide-react";
 
-const ADMIN_PASSWORD = "lir_admin_2024";
-
 export default function AdminPanel() {
     const router = useRouter();
     const [isAuthed, setIsAuthed] = useState(false);
+    const [adminPass, setAdminPass] = useState("");
 
     const [newName, setNewName] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [createMsg, setCreateMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
     useEffect(() => {
-        if (sessionStorage.getItem("adminAuthed") !== "true") {
-            router.push("/supersecretaccess");
+        const pass = sessionStorage.getItem("adminPass");
+        if (sessionStorage.getItem("adminAuthed") !== "true" || !pass) {
+            router.push("/supersecretaccessportal");
         } else {
+            setAdminPass(pass);
             setIsAuthed(true);
         }
     }, [router]);
 
     const { data: teams, isLoading: teamsLoading, refetch } = api.admin.listTeams.useQuery(
-        { adminPassword: ADMIN_PASSWORD },
-        { enabled: isAuthed }
+        { adminPassword: adminPass },
+        { enabled: isAuthed && !!adminPass }
     );
 
     const createTeam = api.admin.createTeam.useMutation({
@@ -45,12 +46,13 @@ export default function AdminPanel() {
     const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
         setCreateMsg(null);
-        createTeam.mutate({ adminPassword: ADMIN_PASSWORD, name: newName, password: newPassword });
+        createTeam.mutate({ adminPassword: adminPass, name: newName, password: newPassword });
     };
 
     const handleLogout = () => {
         sessionStorage.removeItem("adminAuthed");
-        router.push("/supersecretaccess");
+        sessionStorage.removeItem("adminPass");
+        router.push("/supersecretaccessportal");
     };
 
     if (!isAuthed) return null;
@@ -171,7 +173,7 @@ export default function AdminPanel() {
                                             <button
                                                 onClick={() => {
                                                     if (confirm(`Delete team "${team.name}"?`)) {
-                                                        deleteTeam.mutate({ adminPassword: ADMIN_PASSWORD, teamId: team.id });
+                                                        deleteTeam.mutate({ adminPassword: adminPass, teamId: team.id });
                                                     }
                                                 }}
                                                 className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-rose-400"

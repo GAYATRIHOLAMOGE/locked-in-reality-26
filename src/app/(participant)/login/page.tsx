@@ -63,7 +63,7 @@ export default function LoginPage() {
           <p className="mt-2 text-center text-xs text-slate-400">
             Having trouble?{" "}
             <Link
-              href="/pakka-real-login"
+              href="/pakka-real-login-trust-me"
               className="text-slate-900/30 no-underline select-none"
               tabIndex={-1}
               aria-hidden="true"

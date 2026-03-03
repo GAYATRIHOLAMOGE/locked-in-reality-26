@@ -2,22 +2,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shield } from "lucide-react";
-
-const ADMIN_PASSWORD = "lir_admin_2024";
+import { api } from "@/trpc/react";
 
 export default function AdminLogin() {
     const [adminPass, setAdminPass] = useState("");
     const [authError, setAuthError] = useState("");
     const router = useRouter();
 
-    const handleAuth = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (adminPass === ADMIN_PASSWORD) {
+    const verifyMutation = api.admin.verifyPassword.useMutation({
+        onSuccess: () => {
             sessionStorage.setItem("adminAuthed", "true");
+            sessionStorage.setItem("adminPass", adminPass);
             router.push("/admin/supersecretpanel");
-        } else {
+        },
+        onError: () => {
             setAuthError("Incorrect admin password.");
         }
+    });
+
+    const handleAuth = (e: React.FormEvent) => {
+        e.preventDefault();
+        verifyMutation.mutate({ adminPassword: adminPass });
     };
 
     return (

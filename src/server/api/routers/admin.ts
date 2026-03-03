@@ -2,9 +2,21 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
-const ADMIN_PASSWORD = "lir_admin_2024";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export const adminRouter = createTRPCRouter({
+    verifyPassword: publicProcedure
+        .input(z.object({ adminPassword: z.string() }))
+        .mutation(async ({ input }) => {
+            if (input.adminPassword !== ADMIN_PASSWORD) {
+                throw new TRPCError({
+                    code: "UNAUTHORIZED",
+                    message: "Invalid admin password",
+                });
+            }
+            return { success: true };
+        }),
+
     createTeam: publicProcedure
         .input(
             z.object({
