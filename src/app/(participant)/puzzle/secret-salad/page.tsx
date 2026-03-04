@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
 import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { PuzzleCard } from "@/components/PuzzleCard";
 
 export default function SecretSaladPuzzle() {
     const router = useRouter();
@@ -94,16 +95,8 @@ export default function SecretSaladPuzzle() {
             {/* Dark overlay for readability */}
             <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
 
-            <div className="relative z-10 w-full max-w-md p-8 bg-slate-10/80 border border-slate-700/50 backdrop-blur-xl shadow-2xl rounded-3xl">
-                <div className="mb-8">
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-6"
-                    >
-                        <ArrowLeft size={16} /> Back
-                    </Link>
-                    <p className="text-gray-200 text-sm mb-4">M GEQI, M WEA, M GSRUYIVIH</p>
-                </div>
+            <PuzzleCard title={puzzle.name}>
+                <p className="text-gray-200 text-md mb-2">M GEQI, M WEA, M GSRUYIVIH</p>
 
                 {isSolved ? (
                     <div className="text-center py-8 space-y-6">
@@ -153,7 +146,7 @@ export default function SecretSaladPuzzle() {
                         </button>
                     </form>
                 )}
-            </div>
+            </PuzzleCard>
         </main>
     );
 }

@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
-import { Loader2, ArrowLeft, CheckCircle2, Lightbulb, RotateCcw } from "lucide-react";
+import { Loader2, ArrowLeft, CheckCircle2, Lightbulb } from "lucide-react";
 import Link from "next/link";
+import { PuzzleCard } from "@/components/PuzzleCard";
 
 const UNIT = 300; // ms
 
@@ -13,7 +14,7 @@ type SequenceItem = { isOn: boolean; durationMs: number };
 function buildMorseSequence(): SequenceItem[] {
     const words = "KEYBOARD".split(" ");
     const morseMap: Record<string, string> = {
-        L: ".-..", O: "---", K: "-.-", U: "..-", N: "-.", D: "-..", E: ".", R: ".-.", Y: "-.--", B: "-...", A: ".-"
+        O: "---", K: "-.-", N: "-.", D: "-..", E: ".", R: ".-.", Y: "-.--", B: "-...", A: ".-"
     };
 
     const seq: SequenceItem[] = [];
@@ -184,7 +185,7 @@ export default function DitDahPuzzle() {
         );
     }
 
-    if (!puzzle && !puzzlesLoading) {
+    if (!puzzle) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white flex-col gap-4">
                 <p className="text-rose-400">Puzzle not found or not available.</p>
@@ -200,34 +201,25 @@ export default function DitDahPuzzle() {
             {/* Dark overlay for readability */}
             <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
 
-            <div className="relative z-10 w-full max-w-md p-8 bg-slate-900/80 border border-slate-700/50 backdrop-blur-xl shadow-2xl rounded-3xl">
-                <div className="mb-8">
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-6"
-                    >
-                        <ArrowLeft size={16} /> Back
-                    </Link>
-
-                    {!isSolved && (
-                        <div className="flex flex-col items-center justify-center space-y-6 my-8">
-                            <div className={`relative flex items-center justify-center w-32 h-32 rounded-full transition-all duration-200 ${isLightOn ? 'bg-yellow-400/20 shadow-[0_0_60px_20px_rgba(250,204,21,0.3)]' : 'bg-slate-800'}`}>
-                                <Lightbulb
-                                    size={64}
-                                    className={`transition-all duration-200 ${isLightOn ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
-                                />
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={handleAction}
-                                className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors disabled:opacity-50"
-                            >
-                                {isPlaying ? "Restart" : "Start"}
-                            </button>
+            <PuzzleCard title={puzzle?.name ?? ""}>
+                {!isSolved && (
+                    <div className="flex flex-col items-center justify-center space-y-6 my-8">
+                        <div className={`relative flex items-center justify-center w-32 h-32 rounded-full transition-all duration-200 ${isLightOn ? 'bg-yellow-400/20 shadow-[0_0_60px_20px_rgba(250,204,21,0.3)]' : 'bg-slate-800'}`}>
+                            <Lightbulb
+                                size={64}
+                                className={`transition-all duration-200 ${isLightOn ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
+                            />
                         </div>
-                    )}
-                </div>
+
+                        <button
+                            type="button"
+                            onClick={handleAction}
+                            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+                        >
+                            {isPlaying ? "Restart" : "Start"}
+                        </button>
+                    </div>
+                )}
 
                 {isSolved ? (
                     <div className="text-center py-8 space-y-6">
@@ -278,7 +270,7 @@ export default function DitDahPuzzle() {
                         </button>
                     </form>
                 )}
-            </div>
+            </PuzzleCard>
         </main>
     );
 }
