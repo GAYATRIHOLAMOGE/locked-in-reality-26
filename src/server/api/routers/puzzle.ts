@@ -27,7 +27,7 @@ const PUZZLES = [
         id: "dit-dah",
         slug: "dit-dah",
         name: "Dit Dah",
-        solution: "LOOK UNDER KEYBOARD",
+        solution: "UNDER KEYBOARD",
         hint: "Morse Code",
         hintCost: 10,
         points: 40,

@@ -11,7 +11,7 @@ const UNIT = 300; // ms
 type SequenceItem = { isOn: boolean; durationMs: number };
 
 function buildMorseSequence(): SequenceItem[] {
-    const words = "LOOK UNDER KEYBOARD".split(" ");
+    const words = "UNDER KEYBOARD".split(" ");
     const morseMap: Record<string, string> = {
         L: ".-..", O: "---", K: "-.-", U: "..-", N: "-.", D: "-..", E: ".", R: ".-.", Y: "-.--", B: "-...", A: ".-"
     };
