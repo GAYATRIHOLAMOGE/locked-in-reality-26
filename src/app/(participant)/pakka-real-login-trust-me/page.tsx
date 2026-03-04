@@ -30,7 +30,7 @@ export default function RealLoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
       <Image
-        src="/dark-room.png"
+        src="/dark-room.jpg"
         alt="Background"
         fill
         priority
