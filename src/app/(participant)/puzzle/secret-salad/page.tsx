@@ -102,7 +102,7 @@ export default function SecretSaladPuzzle() {
                     >
                         <ArrowLeft size={16} /> Back
                     </Link>
-                    <p className="text-gray-200 text-sm mb-4">M GEQI, M WE A, M GSRUYIVI</p>
+                    <p className="text-gray-200 text-sm mb-4">M GEQI, M WEA, M GSRUYIVIH</p>
                 </div>
 
                 {isSolved ? (
