@@ -4,6 +4,16 @@ import { TRPCError } from "@trpc/server";
 
 const PUZZLES = [
     {
+        id: "bit-gate",
+        slug: "bit-gate",
+        name: "Bit Gate",
+        solution: "LOCKED",
+        hint: "Binary representation",
+        hintCost: 10,
+        points: 40,
+        order: 1,
+    },
+    {
         id: "secret-salad",
         slug: "secret-salad",
         name: "Secret Salad",
@@ -11,7 +21,7 @@ const PUZZLES = [
         hint: "",
         hintCost: 10,
         points: 40,
-        order: 1,
+        order: 2,
     },
     {
         id: "case-order",
@@ -21,7 +31,7 @@ const PUZZLES = [
         hint: "Fibonacci sequence",
         hintCost: 10,
         points: 40,
-        order: 2,
+        order: 3,
     },
     {
         id: "dit-dah",
@@ -31,7 +41,7 @@ const PUZZLES = [
         hint: "Morse Code",
         hintCost: 10,
         points: 40,
-        order: 3,
+        order: 4,
     },
 ];
 

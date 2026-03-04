@@ -8,7 +8,7 @@ interface PuzzleCardProps {
 
 export function PuzzleCard({ title, children }: PuzzleCardProps) {
     return (
-        <div className="relative z-10 w-full max-w-md p-8 bg-slate-900/80 border border-slate-700/50 backdrop-blur-xl shadow-2xl rounded-3xl">
+        <div className="relative z-10 w-full max-w-md p-8 bg-slate-900/40 border border-slate-700/50 backdrop-blur-xl shadow-2xl rounded-3xl">
             <div className="mb-6 px-2">
                 <div className="items-center gap-4 mb-4">
                     <Link
