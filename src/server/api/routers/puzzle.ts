@@ -40,7 +40,7 @@ const PUZZLES = [
         slug: "case-order",
         name: "Case Order",
         solution: "312105",
-        points: 40,
+        points: 50,
         order: 5,
     },
 ];

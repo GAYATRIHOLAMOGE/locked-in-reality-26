@@ -254,10 +254,17 @@ export default function AdminPanel() {
                                             <span className="text-xs text-slate-600 w-5 text-right font-mono">#{i + 1}</span>
                                             <span className="font-medium text-white text-sm">{team.name}</span>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex items-center gap-1 text-yellow-500 text-xs font-mono">
-                                                <Trophy size={11} />
-                                                {team.score}
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex flex-col items-end gap-0.5 min-w-[80px]">
+                                                <div className="flex items-center gap-1 text-yellow-500 text-xs font-mono font-bold">
+                                                    <Trophy size={11} />
+                                                    {team.score}
+                                                </div>
+                                                {team.finishedAt && (
+                                                    <span className="text-[10px] text-emerald-500 font-mono opacity-80">
+                                                        {new Date(team.finishedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                    </span>
+                                                )}
                                             </div>
                                             <button
                                                 onClick={() => {
@@ -265,9 +272,9 @@ export default function AdminPanel() {
                                                         deleteTeam.mutate({ adminPassword: adminPass, teamId: team.id });
                                                     }
                                                 }}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-rose-400"
+                                                className="opacity-60 group-hover:opacity-100 transition-opacity text-slate-600 hover:text-rose-400"
                                             >
-                                                <Trash2 size={13} />
+                                                <Trash2 size={14} />
                                             </button>
                                         </div>
                                     </div>
@@ -330,6 +337,6 @@ export default function AdminPanel() {
                     </div>
                 </div>
             </div>
-        </main>
+        </main >
     );
 }

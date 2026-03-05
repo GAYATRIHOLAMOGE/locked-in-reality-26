@@ -107,105 +107,108 @@ export default function BitGatePuzzle() {
     }
 
     return (
-        <main className="min-h-screen relative flex items-center justify-center text-slate-200 overflow-hidden bg-slate-950">
-            <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
+        <main className="min-h-screen relative flex items-center justify-center text-slate-200 overflow-hidden">
+            {/* Background Image */}
+            <div
+                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: "url('/binary.jpg')" }}
+            />
+            {/* Dark overlay for readability */}
+            <div className="absolute inset-0 z-0 bg-black/30 backdrop-blur-[2px]" />
 
-            <div className="z-10 w-full max-w-lg">
-                <PuzzleCard title={puzzle?.name ?? "Bit Gate"}>
-                    <div className="relative flex flex-col items-center justify-center space-y-8 w-full">
+            <PuzzleCard title={puzzle?.name ?? "Bit Gate"}>
+                <div className="relative flex flex-col items-center justify-center space-y-8 w-full">
 
-                        {submitAnswer.isPending && (
-                            <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md rounded-xl flex items-center justify-center">
-                                <div className="flex flex-col items-center gap-4">
-                                    <Loader2 size={40} className="animate-spin text-green-500" />
-                                    <p className="text-green-400 font-mono animate-pulse tracking-widest text-sm">SECURING GATE...</p>
-                                </div>
+                    {submitAnswer.isPending && (
+                        <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md rounded-xl flex items-center justify-center">
+                            <div className="flex flex-col items-center gap-4">
+                                <Loader2 size={40} className="animate-spin text-green-500" />
+                                <p className="text-green-400 font-mono animate-pulse tracking-widest text-sm">SECURING GATE...</p>
                             </div>
-                        )}
-
-                        <div className="text-center space-y-2">
-                            <h3 className="text-xl font-medium text-slate-300">Lock the door to prevent access</h3>
-                            <p className="text-xs text-slate-500 uppercase tracking-widest">Enter the lock sequence</p>
                         </div>
+                    )}
 
-                        <div className="relative w-full h-24 flex justify-center items-center">
-                            {isSolved ? (
-                                <Image
-                                    src="/door-closed.png"
-                                    alt="Closed Door"
-                                    width={90}
-                                    height={120}
-                                    className="object-contain drop-shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all duration-500"
-                                />
-                            ) : (
-                                <Image
-                                    src="/door-open.png"
-                                    alt="Open Door"
-                                    width={90}
-                                    height={120}
-                                    className="object-contain drop-shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all duration-500"
-                                />
-                            )}
-                        </div>
+                    <div className="text-center space-y-2">
+                        <h3 className="text-lg italic text-slate-300">Lock the door to prevent access</h3>
+                    </div>
 
-                        {!isSolved && (
-                            <div className="flex flex-col gap-2 w-full mt-4">
-                                {/* The 9 switches arranged nicely */}
-                                <div className="grid grid-cols-9 gap-2">
-                                    {switches.map((isOn, idx) => (
-                                        <button
-                                            key={idx}
-                                            type="button"
-                                            onClick={() => toggleSwitch(idx)}
-                                            className={`h-full w-full py-1 rounded-md md:rounded-lg transition-all duration-300 border-2 flex flex-col items-center justify-center gap-2
-                                                ${isOn
-                                                    ? 'bg-green-500/20 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
-                                                    : 'bg-red-500/10 border-red-900/50 shadow-inner'
-                                                }`}
-                                        >
-                                            <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-300 
-                                                ${isOn ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.8)]' : 'bg-red-900/40'}
-                                            `} />
-                                            <span className={`text-[10px] sm:text-xs font-mono font-bold ${isOn ? 'text-green-300' : 'text-slate-600'}`}>
-                                                {isOn ? '1' : '0'}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="flex justify-between w-full mt-1 px-1">
-                                    <span className="text-[10px] text-slate-500 font-mono tracking-widest">MSB</span>
-                                    <span className="text-[10px] text-slate-500 font-mono tracking-widest">LSB</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {errorMsg && (
-                            <p className="text-rose-400 text-sm text-center font-medium animate-pulse">
-                                {errorMsg}
-                            </p>
-                        )}
-
-                        {isSolved && (
-                            <div className="text-center py-4 space-y-6 w-full animate-in fade-in zoom-in duration-500">
-                                <div className="flex justify-center">
-                                    <div className="w-16 h-16 bg-green-500/10 border border-green-500/20 rounded-full flex items-center justify-center">
-                                        <CheckCircle2 size={32} className="text-green-500" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-white mb-2 tracking-wide font-mono">ACCESS SECURED</h2>
-                                </div>
-                                <Link
-                                    href="/dashboard"
-                                    className="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 hover:ring-2 hover:ring-slate-500 text-white font-bold py-3 rounded-xl transition-all mt-4"
-                                >
-                                    Return to Dashboard
-                                </Link>
-                            </div>
+                    <div className="relative w-full h-24 flex justify-center items-center">
+                        {isSolved ? (
+                            <Image
+                                src="/door-closed.png"
+                                alt="Closed Door"
+                                width={90}
+                                height={120}
+                                className="object-contain drop-shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all duration-500"
+                            />
+                        ) : (
+                            <Image
+                                src="/door-open.png"
+                                alt="Open Door"
+                                width={90}
+                                height={120}
+                                className="object-contain drop-shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all duration-500"
+                            />
                         )}
                     </div>
-                </PuzzleCard>
-            </div>
+
+                    {!isSolved && (
+                        <div className="flex flex-col gap-2 w-full mt-4">
+                            {/* The 9 switches arranged nicely */}
+                            <div className="grid grid-cols-9 gap-2">
+                                {switches.map((isOn, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => toggleSwitch(idx)}
+                                        className={`h-full w-full py-1 rounded-md md:rounded-lg transition-all duration-300 border-2 flex flex-col items-center justify-center gap-2
+                                                ${isOn
+                                                ? 'bg-green-500/20 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]'
+                                                : 'bg-red-500/10 border-red-900/50 shadow-inner'
+                                            }`}
+                                    >
+                                        <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-300 
+                                                ${isOn ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.8)]' : 'bg-red-900/40'}
+                                            `} />
+                                        <span className={`text-[10px] sm:text-xs font-mono font-bold ${isOn ? 'text-green-300' : 'text-slate-600'}`}>
+                                            {isOn ? '1' : '0'}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex justify-between w-full mt-1 px-1">
+                                <span className="text-[10px] text-slate-500 font-mono tracking-widest">MSB</span>
+                                <span className="text-[10px] text-slate-500 font-mono tracking-widest">LSB</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {errorMsg && (
+                        <p className="text-rose-400 text-sm text-center font-medium animate-pulse">
+                            {errorMsg}
+                        </p>
+                    )}
+
+                    {isSolved && (
+                        <div className="text-center py-4 space-y-6 w-full animate-in fade-in zoom-in duration-500">
+                            <div className="flex justify-center">
+                                <div className="w-16 h-16 bg-green-500/10 border border-green-500/20 rounded-full flex items-center justify-center">
+                                    <CheckCircle2 size={32} className="text-green-500" />
+                                </div>
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-white mb-2 tracking-wide font-mono">ACCESS SECURED</h2>
+                            </div>
+                            <Link
+                                href="/dashboard"
+                                className="inline-flex items-center justify-center w-full bg-slate-800 hover:bg-slate-700 hover:ring-2 hover:ring-slate-500 text-white font-bold py-3 rounded-xl transition-all mt-4"
+                            >
+                                Return to Dashboard
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            </PuzzleCard>
         </main>
     );
 }

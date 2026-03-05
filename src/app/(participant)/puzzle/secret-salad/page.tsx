@@ -105,7 +105,7 @@ export default function SecretSaladPuzzle() {
                 style={{ backgroundImage: "url('/colosseum.jpg')" }}
             />
             {/* Dark overlay for readability */}
-            <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
+            <div className="absolute inset-0 z-0 bg-black/30 backdrop-blur-[2px]" />
 
             <PuzzleCard title={puzzle.name}>
                 <p className="text-gray-200 text-lg mb-4 text-center">M GEQI, M WEA, M GSRUYIVIH</p>

@@ -82,7 +82,7 @@ export default function FromOriginPuzzle() {
 
     if (puzzlesLoading || !teamId) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-950">
+            <div className="flex min-h-screen items-center justify-center bg-grid">
                 <Loader2 className="animate-spin text-violet-500" size={40} />
             </div>
         );
@@ -90,7 +90,7 @@ export default function FromOriginPuzzle() {
 
     if (!puzzle) {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white flex-col gap-4">
+            <div className="flex min-h-screen items-center justify-center bg-grid text-white flex-col gap-4">
                 <p className="text-rose-400">Puzzle not found or not available.</p>
                 <Link href="/dashboard" className="text-violet-400 hover:underline flex items-center gap-2">
                     <ArrowLeft size={16} /> Back to Dashboard
@@ -101,15 +101,13 @@ export default function FromOriginPuzzle() {
 
     return (
         <main className="min-h-screen relative flex items-center justify-center text-slate-200 overflow-hidden">
-            {/* Dark background for readability */}
-            <div className="absolute inset-0 z-0 bg-slate-950" />
+            {/* Background Image */}
             <div
-                className="absolute inset-0 z-0 opacity-10"
-                style={{
-                    backgroundImage: "radial-gradient(circle at 2px 2px, #475569 1px, transparent 0)",
-                    backgroundSize: "24px 24px"
-                }}
+                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: "url('/coordinates.jpg')" }}
             />
+            {/* Dark overlay for readability */}
+            <div className="absolute inset-0 z-0 bg-black/30 backdrop-blur-[2px]" />
 
             <PuzzleCard title={puzzle.name}>
                 <p className="text-gray-200 text-lg mb-8 text-center italic">Where do the two artifacts lie?</p>

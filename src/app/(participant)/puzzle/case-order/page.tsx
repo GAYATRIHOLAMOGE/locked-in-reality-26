@@ -10,9 +10,7 @@ import { PuzzleCard } from "@/components/PuzzleCard";
 export default function AureaSectioPuzzle() {
     const router = useRouter();
     const [teamId, setTeamId] = useState<string | null>(null);
-    const [answers, setAnswers] = useState(["", "", "", "", "", ""]);
-    // Using traditional refs array for better control
-    const refs = useRef<(HTMLInputElement | null)[]>([]);
+    const [answer, setAnswer] = useState("");
 
     const [errorMsg, setErrorMsg] = useState("");
     const [isSolved, setIsSolved] = useState(false);
@@ -60,8 +58,7 @@ export default function AureaSectioPuzzle() {
                 setIsSolved(true);
             } else {
                 setErrorMsg(data.message);
-                setAnswers(["", "", "", "", "", ""]);
-                refs.current[0]?.focus();
+                setAnswer("");
             }
         },
         onError: () => {
@@ -69,38 +66,17 @@ export default function AureaSectioPuzzle() {
         }
     });
 
-    const handleInputChange = (index: number, value: string) => {
-        const numericValue = value.replace(/[^0-9]/g, "").slice(-1);
-        if (!numericValue && value !== "") return;
-
-        const newAnswers = [...answers];
-        newAnswers[index] = numericValue;
-        setAnswers(newAnswers);
-
-        // Auto focus next
-        if (numericValue && index < 5) {
-            refs.current[index + 1]?.focus();
-        }
-    };
-
-    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Backspace" && !answers[index] && index > 0) {
-            refs.current[index - 1]?.focus();
-        }
-    };
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setErrorMsg("");
         if (!teamId || !puzzle) return;
 
-        const fullAnswer = answers.join("");
-        if (fullAnswer.length < 6) return;
+        if (!answer.trim()) return;
 
         submitAnswer.mutate({
             teamId,
             puzzleId: puzzle.id,
-            answer: fullAnswer
+            answer: answer.trim()
         });
     };
 
@@ -131,7 +107,7 @@ export default function AureaSectioPuzzle() {
                 style={{ backgroundImage: "url('/fibonacci.jpg')" }}
             />
             {/* Dark overlay for readability */}
-            <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
+            <div className="absolute inset-0 z-0 bg-black/30 backdrop-blur-[2px]" />
 
             <PuzzleCard title={puzzle.name}>
                 <p className="text-slate-200 text-lg text-center italic mb-4"> Nature grows forward. This case is a bit different.</p>
@@ -156,23 +132,14 @@ export default function AureaSectioPuzzle() {
                 ) : (
                     <div>
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="grid grid-cols-6 gap-3">
-                                {answers.map((digit, idx) => (
-                                    <input
-                                        key={idx}
-                                        ref={(el) => {
-                                            refs.current[idx] = el;
-                                        }}
-                                        type="text"
-                                        value={digit}
-                                        onChange={(e) => handleInputChange(idx, e.target.value)}
-                                        onKeyDown={(e) => handleKeyDown(idx, e)}
-                                        className="w-full bg-slate-900 border-2 border-slate-700 focus:border-yellow-500 rounded-xl py-4 text-white font-mono text-center text-xl focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all"
-                                        inputMode="numeric"
-                                        maxLength={1}
-                                        required
-                                    />
-                                ))}
+                            <div className="flex flex-col items-center gap-4">
+                                <input
+                                    type="text"
+                                    value={answer}
+                                    onChange={(e) => setAnswer(e.target.value)}
+                                    className="w-full bg-slate-900 border-2 border-slate-700 focus:border-yellow-500 rounded-xl py-3 text-white font-mono text-center text-lg tracking-[0.2em] focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all"
+                                    required
+                                />
                             </div>
 
                             {errorMsg && (
@@ -183,7 +150,7 @@ export default function AureaSectioPuzzle() {
 
                             <button
                                 type="submit"
-                                disabled={submitAnswer.isPending || answers.some(d => !d)}
+                                disabled={submitAnswer.isPending || !answer.trim()}
                                 className="w-full bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 {submitAnswer.isPending ? (

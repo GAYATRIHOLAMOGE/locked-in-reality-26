@@ -218,8 +218,14 @@ export default function DitDahPuzzle() {
     }
 
     return (
-        <main className="min-h-screen relative flex items-center justify-center text-slate-200 overflow-hidden bg-slate-950">
-            <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
+        <main className="min-h-screen relative flex items-center justify-center text-slate-200 overflow-hidden">
+            {/* Background Image */}
+            <div
+                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: "url('/code.jpg')" }}
+            />
+            {/* Dark overlay for readability */}
+            <div className="absolute inset-0 z-0 bg-black/30 backdrop-blur-[2px]" />
 
             <PuzzleCard title={puzzle?.name ?? ""}>
                 {!isSolved && (

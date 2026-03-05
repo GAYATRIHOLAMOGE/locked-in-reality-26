@@ -64,14 +64,53 @@ export const adminRouter = createTRPCRouter({
                 });
             }
 
-            return ctx.db.team.findMany({
-                select: {
-                    id: true,
-                    name: true,
-                    score: true,
-                    createdAt: true,
+            const teams = await ctx.db.team.findMany({
+                include: {
+                    puzzleStatuses: {
+                        where: { isSolved: true },
+                        select: { solvedAt: true }
+                    }
                 },
-                orderBy: { score: "desc" },
+            });
+
+            const teamData = teams.map((team) => {
+                const solvedCount = team.puzzleStatuses.length;
+                const isFinished = solvedCount === 5; // Total 5 puzzles
+
+                const solveTimes = team.puzzleStatuses.map(s => s.solvedAt?.getTime() ?? 0);
+                const lastSolvedAtMs = solveTimes.length > 0 ? Math.max(...solveTimes) : null;
+                const finishedAt = isFinished ? new Date(lastSolvedAtMs!) : null;
+
+                return {
+                    id: team.id,
+                    name: team.name,
+                    score: team.score,
+                    createdAt: team.createdAt,
+                    lastSolvedAtMs: lastSolvedAtMs,
+                    finishedAt: finishedAt
+                };
+            });
+
+            // Sorting logic: 
+            // 1. Sort by score (DESC)
+            // 2. If score is tied, sort by last solved time (ASC - earlier is better)
+            // 3. Fallback to createdAt for teams with no solves
+            return teamData.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+
+                // Score tie-breaker
+                if (a.lastSolvedAtMs !== null && b.lastSolvedAtMs !== null) {
+                    return a.lastSolvedAtMs - b.lastSolvedAtMs;
+                }
+
+                // One has points, one doesn't (though same score check above handles most)
+                if (a.lastSolvedAtMs !== null) return -1;
+                if (b.lastSolvedAtMs !== null) return 1;
+
+                // Both 0 points
+                return a.createdAt.getTime() - b.createdAt.getTime();
             });
         }),
 
