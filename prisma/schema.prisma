@@ -40,9 +40,8 @@ model TeamPuzzleStatus {
 
   puzzleSlug String
 
-  isSolved    Boolean   @default(false)
-  solvedAt    DateTime?
-  isHintTaken Boolean   @default(false)
+  isSolved Boolean   @default(false)
+  solvedAt DateTime?
 
   @@unique([teamId, puzzleSlug])
   @@map("team_puzzle_status")

@@ -8,29 +8,23 @@ const PUZZLES = [
         slug: "bit-gate",
         name: "Bit Gate",
         solution: "LOCKED",
-        hint: "Binary representation",
-        hintCost: 10,
-        points: 40,
+        points: 20,
         order: 1,
+    },
+    {
+        id: "from-origin",
+        slug: "from-origin",
+        name: "From Origin",
+        solution: "3,9 and 9,14",
+        points: 20,
+        order: 2,
     },
     {
         id: "secret-salad",
         slug: "secret-salad",
         name: "Secret Salad",
         solution: "I CAME, I SAW, I CONQUERED",
-        hint: "",
-        hintCost: 10,
-        points: 40,
-        order: 2,
-    },
-    {
-        id: "case-order",
-        slug: "case-order",
-        name: "Case Order",
-        solution: "312105",
-        hint: "Fibonacci sequence",
-        hintCost: 10,
-        points: 40,
+        points: 30,
         order: 3,
     },
     {
@@ -38,10 +32,16 @@ const PUZZLES = [
         slug: "dit-dah",
         name: "Dit Dah",
         solution: "KEYBOARD",
-        hint: "Morse Code",
-        hintCost: 10,
         points: 40,
         order: 4,
+    },
+    {
+        id: "case-order",
+        slug: "case-order",
+        name: "Case Order",
+        solution: "312105",
+        points: 40,
+        order: 5,
     },
 ];
 
@@ -54,17 +54,13 @@ export const puzzleRouter = createTRPCRouter({
             });
 
             const solvedSet = new Set(puzzleStatuses.filter(s => s.isSolved).map(s => s.puzzleSlug));
-            const hintSet = new Set(puzzleStatuses.filter(s => s.isHintTaken).map(s => s.puzzleSlug));
 
             return PUZZLES.map((p) => ({
                 id: p.slug, // Use slug as ID for compatibility
                 name: p.name,
                 points: p.points,
-                hintCost: p.hintCost,
                 order: p.order,
                 solved: solvedSet.has(p.slug),
-                hintUsed: hintSet.has(p.slug),
-                hintText: hintSet.has(p.slug) ? p.hint : null,
             }));
         }),
 
@@ -134,68 +130,6 @@ export const puzzleRouter = createTRPCRouter({
             } else {
                 return { status: "WRONG", message: "Incorrect solution. Try again." };
             }
-        }),
-
-    useHint: publicProcedure
-        .input(z.object({ teamId: z.string(), puzzleId: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-            const puzzle = PUZZLES.find(p => p.slug === input.puzzleId);
-
-            if (!puzzle) {
-                throw new TRPCError({
-                    code: "NOT_FOUND",
-                    message: "Puzzle not found",
-                });
-            }
-
-            // Check if hint already used
-            const status = await ctx.db.teamPuzzleStatus.findUnique({
-                where: {
-                    teamId_puzzleSlug: {
-                        teamId: input.teamId,
-                        puzzleSlug: input.puzzleId,
-                    }
-                }
-            });
-
-            if (status?.isHintTaken) {
-                return {
-                    hintText: puzzle.hint,
-                    hintCost: 0,
-                    alreadyUsed: true,
-                };
-            }
-
-            await ctx.db.teamPuzzleStatus.upsert({
-                where: {
-                    teamId_puzzleSlug: {
-                        teamId: input.teamId,
-                        puzzleSlug: input.puzzleId,
-                    }
-                },
-                update: { isHintTaken: true },
-                create: {
-                    teamId: input.teamId,
-                    puzzleSlug: input.puzzleId,
-                    isHintTaken: true,
-                }
-            });
-
-            // Deduct hintCost (don't go below 0)
-            const team = await ctx.db.team.findUnique({
-                where: { id: input.teamId },
-            });
-            const newScore = Math.max(0, (team?.score ?? 0) - puzzle.hintCost);
-            await ctx.db.team.update({
-                where: { id: input.teamId },
-                data: { score: newScore },
-            });
-
-            return {
-                hintText: puzzle.hint,
-                hintCost: puzzle.hintCost,
-                alreadyUsed: false,
-            };
         }),
 
     getTeamStatus: publicProcedure

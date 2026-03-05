@@ -94,7 +94,7 @@ export default function MainframeBreak() {
                     </>
                 ) : (
                     <div className="relative z-10 w-full max-w-xl p-8 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl flex flex-col items-center text-center">
-                        <h1 className="text-white text-3xl font-black mb-6 tracking-tighter animate-pulse text-red-500">TERMINAL RECOGNIZED</h1>
+                        <h1 className="text-green-glow-strong text-3xl font-black mb-6 tracking-tighter">TERMINAL RECOGNIZED</h1>
 
                         {hasSubmitted ? (
                             <div className={`p-6 rounded-lg mb-4 w-full border ${msg?.type === 'ok' ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : 'bg-red-500/10 border-red-500/50 text-red-500'}`}>
@@ -109,7 +109,7 @@ export default function MainframeBreak() {
                                         ⚠️ WARNING: ONLY ONE ATTEMPT PERMITTED ⚠️
                                     </p>
                                 </div>
-                                <p className="text-slate-400 text-sm">INPUT OVERRIDE CODE</p>
+                                <p className="text-green-dim text-sm">INPUT OVERRIDE CODE</p>
                                 <input
                                     type="number"
                                     value={inputValue}
@@ -121,7 +121,7 @@ export default function MainframeBreak() {
                                 <button
                                     type="submit"
                                     disabled={submitMutation.isPending}
-                                    className="w-full bg-white text-black font-black py-4 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-50"
+                                    className="w-full bg-gray-200/80 text-black font-black py-4 rounded-xl hover:bg-white/80 transition-colors disabled:opacity-50"
                                 >
                                     {submitMutation.isPending ? "TRANSMITTING..." : "EXECUTE OVERRIDE"}
                                 </button>

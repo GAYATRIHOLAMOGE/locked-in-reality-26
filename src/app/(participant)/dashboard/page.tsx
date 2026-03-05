@@ -76,8 +76,14 @@ export default function Dashboard() {
     }, [globalState?.isMainframeBreakActive, puzzles, router]);
 
     useEffect(() => {
-        if (globalState && !globalState.isStarted) {
-            router.push("/");
+        if (globalState) {
+            const now = new Date().getTime();
+            const start = globalState.startedAt ? new Date(globalState.startedAt).getTime() : 0;
+            const isEnded = globalState.isStarted && globalState.startedAt && (now - start >= 2 * 60 * 60 * 1000);
+
+            if (!globalState.isStarted || isEnded) {
+                router.push("/");
+            }
         }
     }, [globalState, router]);
 

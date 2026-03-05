@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { api } from "@/trpc/react";
 import {
-    Loader2, CheckCircle, Lock, Unlock, Send, Lightbulb, AlertTriangle, X
+    Loader2, CheckCircle, Lock, Unlock, Send
 } from "lucide-react";
 
 interface PuzzleInterfaceProps {
@@ -11,67 +11,17 @@ interface PuzzleInterfaceProps {
     onScoreChange?: () => void;
 }
 
-interface HintModalProps {
-    puzzleName: string;
-    hintCost: number;
-    onConfirm: () => void;
-    onCancel: () => void;
-    loading: boolean;
-}
-
-function HintModal({ puzzleName, hintCost, onConfirm, onCancel, loading }: HintModalProps) {
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-amber-500/10 rounded-lg">
-                        <AlertTriangle className="text-amber-400" size={20} />
-                    </div>
-                    <h3 className="font-bold text-white">Use Hint?</h3>
-                    <button onClick={onCancel} className="ml-auto text-slate-600 hover:text-white transition-colors">
-                        <X size={18} />
-                    </button>
-                </div>
-                <p className="text-slate-400 text-sm mb-5">
-                    Using a hint for <span className="text-white font-semibold">{puzzleName}</span> will cost you{" "}
-                    <span className="text-amber-400 font-bold">{hintCost} pts</span>. This cannot be undone.
-                </p>
-                <div className="flex gap-3">
-                    <button
-                        onClick={onCancel}
-                        className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium py-2.5 rounded-xl transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        disabled={loading}
-                        className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-sm font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5"
-                    >
-                        {loading ? <Loader2 size={14} className="animate-spin" /> : <Lightbulb size={14} />}
-                        Use Hint
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 type PuzzleCardData = {
     id: string;
     name: string;
     points: number;
-    hintCost: number;
     order: number;
     solved: boolean;
-    hintUsed: boolean;
-    hintText: string | null;
 };
 
 export default function PuzzleInterface({ teamId, onScoreChange }: PuzzleInterfaceProps) {
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [feedback, setFeedback] = useState<Record<string, { status: "CORRECT" | "WRONG" | "ALREADY_SOLVED"; message: string }>>({});
-    const [hintModal, setHintModal] = useState<{ puzzleId: string; puzzleName: string; hintCost: number } | null>(null);
 
     const { data: puzzles, isLoading, refetch } = api.puzzle.getPuzzles.useQuery(
         { teamId },
@@ -97,15 +47,6 @@ export default function PuzzleInterface({ teamId, onScoreChange }: PuzzleInterfa
         },
     });
 
-    const hintMutation = api.puzzle.useHint.useMutation({
-        onSuccess: () => {
-            setHintModal(null);
-            refetch();
-            onScoreChange?.();
-        },
-        onError: () => setHintModal(null),
-    });
-
     const handleAnswerChange = (puzzleId: string, value: string) => {
         setAnswers((prev) => ({ ...prev, [puzzleId]: value }));
         if (feedback[puzzleId]) {
@@ -121,11 +62,6 @@ export default function PuzzleInterface({ teamId, onScoreChange }: PuzzleInterfa
         const answer = answers[puzzleId];
         if (!answer?.trim()) return;
         submitMutation.mutate({ teamId, puzzleId, answer });
-    };
-
-    const handleHintConfirm = () => {
-        if (!hintModal) return;
-        hintMutation.mutate({ teamId, puzzleId: hintModal.puzzleId });
     };
 
     if (isLoading) {
@@ -149,16 +85,6 @@ export default function PuzzleInterface({ teamId, onScoreChange }: PuzzleInterfa
 
     return (
         <>
-            {hintModal && (
-                <HintModal
-                    puzzleName={hintModal.puzzleName}
-                    hintCost={hintModal.hintCost}
-                    onConfirm={handleHintConfirm}
-                    onCancel={() => setHintModal(null)}
-                    loading={hintMutation.isPending}
-                />
-            )}
-
             {/* Progress bar */}
             <div className="mb-8">
                 <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
@@ -207,27 +133,6 @@ export default function PuzzleInterface({ teamId, onScoreChange }: PuzzleInterfa
                                         <CheckCircle size={20} className="text-emerald-400 shrink-0" />
                                     )}
                                 </div>
-
-
-
-                                {/* Hint section */}
-                                {puzzle.hintUsed && puzzle.hintText ? (
-                                    <div className="mb-4 bg-amber-500/8 border border-amber-500/20 rounded-xl p-3">
-                                        <div className="flex items-center gap-1.5 text-amber-400 text-xs font-semibold mb-1.5">
-                                            <Lightbulb size={12} />
-                                            HINT (−{puzzle.hintCost} pts)
-                                        </div>
-                                        <p className="text-amber-200/80 text-xs leading-relaxed">{puzzle.hintText}</p>
-                                    </div>
-                                ) : !puzzle.solved ? (
-                                    <button
-                                        onClick={() => setHintModal({ puzzleId: puzzle.id, puzzleName: puzzle.name, hintCost: puzzle.hintCost })}
-                                        className="w-full mb-4 flex items-center justify-center gap-1.5 text-xs text-amber-500/70 hover:text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/15 hover:border-amber-500/30 rounded-xl py-2 transition-all"
-                                    >
-                                        <Lightbulb size={12} />
-                                        Use Hint (−{puzzle.hintCost} pts)
-                                    </button>
-                                ) : null}
 
                                 {/* Submission area */}
                                 {puzzle.solved ? (

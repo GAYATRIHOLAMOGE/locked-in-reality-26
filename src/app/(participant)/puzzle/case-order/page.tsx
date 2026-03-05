@@ -134,7 +134,7 @@ export default function AureaSectioPuzzle() {
             <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
 
             <PuzzleCard title={puzzle.name}>
-                <p className="text-slate-200 text-md mb-2"> Nature grows forward. This case is a bit different.</p>
+                <p className="text-slate-200 text-lg text-center italic mb-4"> Nature grows forward. This case is a bit different.</p>
 
                 {isSolved ? (
                     <div className="text-center py-8 space-y-6">

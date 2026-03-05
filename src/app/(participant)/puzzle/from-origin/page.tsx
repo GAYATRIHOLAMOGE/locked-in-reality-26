@@ -7,10 +7,11 @@ import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { PuzzleCard } from "@/components/PuzzleCard";
 
-export default function SecretSaladPuzzle() {
+export default function FromOriginPuzzle() {
     const router = useRouter();
     const [teamId, setTeamId] = useState<string | null>(null);
-    const [answer, setAnswer] = useState("");
+    const [ans1, setAns1] = useState("");
+    const [ans2, setAns2] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const [isSolved, setIsSolved] = useState(false);
 
@@ -40,7 +41,7 @@ export default function SecretSaladPuzzle() {
         { enabled: !!teamId }
     );
 
-    const puzzle = puzzles?.find(p => p.id === "secret-salad");
+    const puzzle = puzzles?.find(p => p.id === "from-origin");
 
     useEffect(() => {
         if (puzzle?.solved) {
@@ -57,7 +58,8 @@ export default function SecretSaladPuzzle() {
                 setIsSolved(true);
             } else {
                 setErrorMsg(data.message);
-                setAnswer("");
+                setAns1("");
+                setAns2("");
             }
         },
         onError: () => {
@@ -69,12 +71,12 @@ export default function SecretSaladPuzzle() {
         e.preventDefault();
         setErrorMsg("");
         if (!teamId || !puzzle) return;
-        if (!answer.trim()) return;
+        if (!ans1.trim() || !ans2.trim()) return;
 
         submitAnswer.mutate({
             teamId,
             puzzleId: puzzle.id,
-            answer: answer.trim()
+            answer: `${ans1.trim()} and ${ans2.trim()}`
         });
     };
 
@@ -99,16 +101,18 @@ export default function SecretSaladPuzzle() {
 
     return (
         <main className="min-h-screen relative flex items-center justify-center text-slate-200 overflow-hidden">
-            {/* Background Image */}
+            {/* Dark background for readability */}
+            <div className="absolute inset-0 z-0 bg-slate-950" />
             <div
-                className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: "url('/colosseum.jpg')" }}
+                className="absolute inset-0 z-0 opacity-10"
+                style={{
+                    backgroundImage: "radial-gradient(circle at 2px 2px, #475569 1px, transparent 0)",
+                    backgroundSize: "24px 24px"
+                }}
             />
-            {/* Dark overlay for readability */}
-            <div className="absolute inset-0 z-0 bg-black/40 backdrop-blur-[2px]" />
 
             <PuzzleCard title={puzzle.name}>
-                <p className="text-gray-200 text-lg mb-4 text-center">M GEQI, M WEA, M GSRUYIVIH</p>
+                <p className="text-gray-200 text-lg mb-8 text-center italic">Where do the two artifacts lie?</p>
 
                 {isSolved ? (
                     <div className="text-center py-8 space-y-6">
@@ -129,12 +133,19 @@ export default function SecretSaladPuzzle() {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
+                        <div className="flex flex-row gap-4">
                             <input
                                 type="text"
-                                value={answer}
-                                onChange={(e) => setAnswer(e.target.value.toUpperCase())}
-                                className="w-full bg-slate-900 border-2 border-slate-700 focus:border-yellow-500 rounded-xl px-5 py-4 text-white font-mono text-center tracking-widest focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all uppercase"
+                                value={ans1}
+                                onChange={(e) => setAns1(e.target.value)}
+                                className="w-1/2 bg-slate-900 border-2 border-slate-700 focus:border-yellow-500 rounded-xl px-5 py-4 text-white font-mono text-center tracking-widest focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all uppercase"
+                                required
+                            />
+                            <input
+                                type="text"
+                                value={ans2}
+                                onChange={(e) => setAns2(e.target.value)}
+                                className="w-1/2 bg-slate-900 border-2 border-slate-700 focus:border-yellow-500 rounded-xl px-5 py-4 text-white font-mono text-center tracking-widest focus:outline-none focus:ring-4 focus:ring-yellow-500/20 transition-all uppercase"
                                 required
                             />
                         </div>
@@ -147,7 +158,7 @@ export default function SecretSaladPuzzle() {
 
                         <button
                             type="submit"
-                            disabled={submitAnswer.isPending || !answer.trim()}
+                            disabled={submitAnswer.isPending || !ans1.trim() || !ans2.trim()}
                             className="w-full bg-yellow-600 hover:bg-yellow-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
                         >
                             {submitAnswer.isPending ? (

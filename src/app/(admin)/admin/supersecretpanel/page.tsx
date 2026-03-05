@@ -291,7 +291,7 @@ export default function AdminPanel() {
                                             type="number"
                                             title="Duration (mins)"
                                             placeholder="Min"
-                                            className="w-10 bg-black border border-slate-700 text-[10px] px-1 rounded"
+                                            className="w-10 bg-black border border-slate-700 text-sm py-1 px-2 rounded no-spinner"
                                             defaultValue={globalState?.mainframeBreakDurationMins ?? 15}
                                             id="mb-duration"
                                         /></div>
@@ -301,7 +301,7 @@ export default function AdminPanel() {
                                             type="number"
                                             title="Correct Ans"
                                             placeholder="Ans"
-                                            className="w-10 bg-black border border-slate-700 text-[10px] px-1 rounded"
+                                            className="w-10 bg-black border border-slate-700 text-sm py-1 px-2 rounded no-spinner"
                                             defaultValue={globalState?.mainframeBreakCorrectValue ?? 14}
                                             id="mb-answer"
                                         /></div>

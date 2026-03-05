@@ -104,6 +104,31 @@ export default function Home() {
     );
   }
 
+  const isEnded = () => {
+    if (!globalState.startedAt) return false;
+    const now = new Date().getTime();
+    const start = new Date(globalState.startedAt).getTime();
+    return (now - start) >= 2 * 60 * 60 * 1000;
+  };
+
+  if (isEnded()) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center relative font-mono">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "linear-gradient(#54FE55 1px, transparent 1px), linear-gradient(90deg, #54FE55 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+        <div className="text-white text-xl font-semibold tracking-[0.3em] uppercase">
+          simulation ended
+        </div>
+      </main>
+    );
+  }
+
 
   return (
     <div

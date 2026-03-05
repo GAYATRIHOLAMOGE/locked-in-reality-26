@@ -57,7 +57,6 @@ export default function DitDahPuzzle() {
     const [isSolved, setIsSolved] = useState(false);
 
     const [lights, setLights] = useState<boolean[]>([false, false, false, false]);
-    const [isPlaying, setIsPlaying] = useState(false);
 
     const words = [
         COMPANION_WORDS[0]!,
@@ -68,8 +67,6 @@ export default function DitDahPuzzle() {
 
     const sequencesRef = useRef(words.map(buildMorseSequence));
     const timeoutsRef = useRef<(NodeJS.Timeout | null)[]>([null, null, null, null]);
-    const mainTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const isPlayingRef = useRef(false);
 
     useEffect(() => {
         const id = localStorage.getItem("teamId");
@@ -135,97 +132,71 @@ export default function DitDahPuzzle() {
         });
     };
 
-    const playSequence = () => {
-        if (isSolved || isPlaying) return;
+    const toggleBulb = (bulbIndex: number) => {
+        if (isSolved) return;
 
-        setIsPlaying(true);
-        isPlayingRef.current = true;
-        setLights([false, false, false, false]);
+        // If this bulb is already playing, stop it
+        if (timeoutsRef.current[bulbIndex]) {
+            clearTimeout(timeoutsRef.current[bulbIndex]!);
+            timeoutsRef.current[bulbIndex] = null;
+            setLights(prev => {
+                const newLights = [...prev];
+                newLights[bulbIndex] = false;
+                return newLights;
+            });
+            return;
+        }
 
-        sequencesRef.current.forEach((seq, bulbIndex) => {
-            let currentIndex = 0;
+        // Start playing sequence for this bulb
+        const seq = sequencesRef.current[bulbIndex];
+        if (!seq) return;
 
-            const nextStep = () => {
-                if (!isPlayingRef.current) return;
+        let currentIndex = 0;
 
-                if (currentIndex >= seq.length) {
-                    setLights(prev => {
-                        const newLights = [...prev];
-                        if (newLights.length > bulbIndex) newLights[bulbIndex] = false;
-                        return newLights;
-                    });
-                    return;
-                }
-
-                const step = seq[currentIndex];
+        const nextStep = () => {
+            if (currentIndex >= seq.length) {
                 setLights(prev => {
-                    const newState = [...prev];
-                    if (newState.length > bulbIndex) newState[bulbIndex] = step.isOn;
-                    return newState;
+                    const newLights = [...prev];
+                    newLights[bulbIndex] = false;
+                    return newLights;
                 });
-
-                timeoutsRef.current[bulbIndex] = setTimeout(() => {
-                    currentIndex++;
-                    nextStep();
-                }, step.durationMs);
-            };
-
-            nextStep();
-        });
-
-        const maxDuration = Math.max(...sequencesRef.current.map(seq =>
-            seq.reduce((acc, curr) => acc + curr.durationMs, 0)
-        ));
-
-        mainTimeoutRef.current = setTimeout(() => {
-            if (isPlayingRef.current) {
-                isPlayingRef.current = false;
-                setIsPlaying(false);
-                setLights([false, false, false, false]);
+                timeoutsRef.current[bulbIndex] = null;
+                return;
             }
-        }, maxDuration + 100);
+
+            const step = seq[currentIndex];
+            setLights(prev => {
+                const newState = [...prev];
+                newState[bulbIndex] = step.isOn;
+                return newState;
+            });
+
+            timeoutsRef.current[bulbIndex] = setTimeout(() => {
+                currentIndex++;
+                nextStep();
+            }, step.durationMs);
+        };
+
+        nextStep();
     };
 
     useEffect(() => {
         if (isSolved) {
             setLights([true, true, true, true]);
-            isPlayingRef.current = false;
-            setIsPlaying(false);
-            timeoutsRef.current.forEach(t => {
-                if (t) clearTimeout(t);
-            });
-            if (mainTimeoutRef.current) clearTimeout(mainTimeoutRef.current);
-            return;
-        }
-
-        return () => {
-            isPlayingRef.current = false;
-            setIsPlaying(false);
-            timeoutsRef.current.forEach(t => {
-                if (t) clearTimeout(t);
-            });
-            if (mainTimeoutRef.current) clearTimeout(mainTimeoutRef.current);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSolved]);
-
-    const handleAction = () => {
-        if (isPlaying) {
-            isPlayingRef.current = false;
             timeoutsRef.current.forEach(t => {
                 if (t) clearTimeout(t);
             });
             timeoutsRef.current = [null, null, null, null];
-            if (mainTimeoutRef.current) {
-                clearTimeout(mainTimeoutRef.current);
-                mainTimeoutRef.current = null;
-            }
-            setLights([false, false, false, false]);
-            setIsPlaying(false);
-        } else {
-            playSequence();
+            return;
         }
-    };
+
+        return () => {
+            timeoutsRef.current.forEach(t => {
+                if (t) clearTimeout(t);
+            });
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isSolved]);
 
     if (puzzlesLoading || !teamId) {
         return (
@@ -252,25 +223,23 @@ export default function DitDahPuzzle() {
 
             <PuzzleCard title={puzzle?.name ?? ""}>
                 {!isSolved && (
-                    <div className="flex flex-col items-center justify-center space-y-6 my-6">
+                    <div className="flex flex-col items-center justify-center space-y-8 my-6">
                         <div className="flex flex-row w-full items-center justify-center gap-12 md:gap-16">
                             {lights.map((isOn, i) => (
-                                <div key={i} className="flex flex-col items-center gap-3">
-                                    <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-100 ${isOn ? 'bg-yellow-400 shadow-[0_0_15px_5px_rgba(250,204,21,0.6)]' : 'bg-slate-800'}`} />
-                                    <span className="text-slate-500 font-mono text-xs">{i + 1}</span>
-                                </div>
+                                <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => toggleBulb(i)}
+                                    className="flex flex-col items-center gap-4 group focus:outline-none"
+                                >
+                                    <div className={`w-4 h-4 md:w-5 md:h-5 rounded-full transition-all duration-100 ${isOn ? 'bg-yellow-400 shadow-[0_0_15px_5px_rgba(250,204,21,0.6)] scale-110' : 'bg-slate-800 group-hover:bg-slate-700'}`} />
+                                    <span className={`font-mono text-sm transition-colors ${isOn ? 'text-yellow-400' : 'text-slate-500 group-hover:text-slate-400'}`}>{i + 1}</span>
+                                </button>
                             ))}
                         </div>
-                        <button
-                            type="button"
-                            onClick={handleAction}
-                            className="flex items-center text-sm text-slate-400 border border-slate-800 rounded-full px-4 py-2 hover:text-white transition-colors disabled:opacity-50"
-                        >
-                            {isPlaying ? "Stop" : "Start"}
-                        </button>
 
-                        <p className="text-slate-300 font-medium text-center text-lg md:text-xl">
-                            The one true answer is to the North of WE
+                        <p className="text-slate-300 text-center text-lg md:text-xl italic">
+                            The light that holds the truth is to the North of WE
                         </p>
 
                     </div>
