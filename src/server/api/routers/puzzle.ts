@@ -31,7 +31,7 @@ const PUZZLES = [
         id: "dit-dah",
         slug: "dit-dah",
         name: "Dit Dah",
-        solution: "KEYBOARD",
+        solution: "KEYB",
         points: 40,
         order: 4,
     },
