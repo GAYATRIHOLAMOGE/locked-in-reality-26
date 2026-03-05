@@ -36,4 +36,18 @@ export const teamRouter = createTRPCRouter({
                 });
             }
         }),
+
+    getTeam: publicProcedure
+        .input(z.object({ teamId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            return ctx.db.team.findUnique({
+                where: { id: input.teamId },
+                select: {
+                    id: true,
+                    name: true,
+                    score: true,
+                    hasSubmittedMainframe: true,
+                }
+            });
+        }),
 });

@@ -6,6 +6,18 @@ datasource db {
   provider = "postgresql"
 }
 
+model GlobalState {
+  id        String    @id @default("global")
+  isStarted Boolean   @default(false)
+  startedAt DateTime?
+
+  // Mainframe Break Event
+  isMainframeBreakActive     Boolean   @default(false)
+  mainframeBreakStartedAt    DateTime?
+  mainframeBreakDurationMins Int       @default(15)
+  mainframeBreakCorrectValue Int       @default(14)
+}
+
 model Team {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   name      String   @unique
@@ -14,6 +26,8 @@ model Team {
   updatedAt DateTime @updatedAt
 
   score Int @default(0)
+
+  hasSubmittedMainframe Boolean @default(false)
 
   puzzleStatuses TeamPuzzleStatus[]
 }

@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
 import Image from "next/image";
-import { LogOut, Loader2, Trophy, Play, CheckCircle2 } from "lucide-react";
+import { LogOut, Loader2, Trophy, Play, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 
 export default function Dashboard() {
     const router = useRouter();
     const [teamId, setTeamId] = useState<string | null>(null);
     const [teamName, setTeamName] = useState<string | null>(null);
+    const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
     const getPuzzleSlug = (name: string, id: string) => {
         return id; // backend now returns slug as ID
@@ -27,7 +28,7 @@ export default function Dashboard() {
         }
     }, [router]);
 
-    const { data: team, isLoading, refetch } = api.puzzle.getTeamStatus.useQuery(
+    const { data: team, isLoading } = api.puzzle.getTeamStatus.useQuery(
         { teamId: teamId ?? "" },
         { enabled: !!teamId }
     );
@@ -36,6 +37,77 @@ export default function Dashboard() {
         { teamId: teamId ?? "" },
         { enabled: !!teamId }
     );
+
+    const { data: globalState, refetch: refetchGlobal } = api.global.getState.useQuery(undefined, {
+        refetchInterval: 5000,
+    });
+
+    const [glitchActive, setGlitchActive] = useState(false);
+    const [hiddenCardIndices, setHiddenCardIndices] = useState<number[]>([]);
+    const [breakAlert, setBreakAlert] = useState(false);
+
+    useEffect(() => {
+        if (globalState?.isMainframeBreakActive) {
+            setGlitchActive(true);
+
+            // Disappear cards one by one
+            if (puzzles) {
+                puzzles.forEach((_, i) => {
+                    setTimeout(() => {
+                        setHiddenCardIndices(prev => [...prev, i]);
+                    }, i * 500);
+                });
+
+                // Show alert after cards disappear
+                setTimeout(() => {
+                    setBreakAlert(true);
+                }, (puzzles.length) * 500 + 500);
+
+                // Redirect after 10 seconds of break alert
+                setTimeout(() => {
+                    router.push("/265616b");
+                }, (puzzles.length) * 500 + 10500);
+            }
+        } else {
+            setGlitchActive(false);
+            setHiddenCardIndices([]);
+            setBreakAlert(false);
+        }
+    }, [globalState?.isMainframeBreakActive, puzzles, router]);
+
+    useEffect(() => {
+        if (globalState && !globalState.isStarted) {
+            router.push("/");
+        }
+    }, [globalState, router]);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+
+        if (globalState?.isStarted && globalState.startedAt) {
+            interval = setInterval(() => {
+                const now = new Date().getTime();
+                const start = new Date(globalState.startedAt!).getTime();
+                const diff = (start + 2 * 60 * 60 * 1000) - now;
+
+                if (diff <= 0) {
+                    setTimeLeft("00:00:00");
+                } else {
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    setTimeLeft(
+                        `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+                    );
+                }
+            }, 1000);
+        } else {
+            setTimeLeft(null);
+        }
+
+        return () => clearInterval(interval);
+    }, [globalState]);
 
     const handleLogout = () => {
         localStorage.removeItem("teamId");
@@ -67,8 +139,16 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen relative bg-[url('/afraid.jpg')] bg-cover bg-center bg-fixed text-slate-200">
-            <div className="absolute inset-0 bg-black/60 z-0" />
+        <div className={`min-h-screen relative bg-[url('/afraid.jpg')] bg-cover bg-center bg-fixed text-slate-200 transition-all duration-300 ${glitchActive ? 'animate-glitch' : ''}`}>
+            <div className={`absolute inset-0 bg-black/60 z-0 ${glitchActive ? 'bg-red-900/40' : ''}`} />
+
+            {breakAlert && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md">
+                    <div className="text-red-500 font-mono text-4xl font-black animate-pulse text-center px-4">
+                        SERVER MAINFRAME BREAKING
+                    </div>
+                </div>
+            )}
 
             <div className="relative z-10 flex flex-col min-h-screen">
                 {/* Header */}
@@ -83,6 +163,13 @@ export default function Dashboard() {
                         </div>
 
                         <div className="flex items-center gap-4">
+                            {timeLeft && (
+                                <div className="hidden sm:flex items-center gap-2 bg-slate-900/80 border border-slate-700 rounded-full px-4 py-1.5 text-sm">
+                                    <Clock size={13} className="text-emerald-400" />
+                                    <span className="font-mono font-bold text-white tracking-wider">{timeLeft}</span>
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-full px-4 py-1.5 text-sm">
                                 <Trophy size={13} className="text-yellow-400" />
                                 <span className="font-mono font-bold text-yellow-300">{team.score}</span>
@@ -110,7 +197,7 @@ export default function Dashboard() {
                             {puzzles?.map((puzzle, index) => (
                                 <div
                                     key={puzzle.id}
-                                    className={`relative w-60 group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-md p-5 transition-all hover:border-violet-500/50 block`}
+                                    className={`relative w-60 group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-md p-5 transition-all hover:border-violet-500/50 block ${hiddenCardIndices.includes(index) ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'} duration-500`}
                                 >
                                     {/* Glow effect */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />

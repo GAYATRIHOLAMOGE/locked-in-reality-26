@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { api } from "@/trpc/react";
+import { Loader2 } from "lucide-react";
+
 const GLITCH_CHARS = "!<>-_\\/[]{}—=+*^?#░▒▓█▄▀";
 
 function useGlitch(text: string, active: boolean) {
@@ -61,6 +64,8 @@ export default function Home() {
   const codeDisplay = useGlitch("403", glitching);
   const textDisplay = useGlitch("FORBIDDEN", glitching);
 
+  const { data: globalState, isLoading: isGlobalLoading } = api.global.getState.useQuery();
+
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 100);
     return () => clearTimeout(t);
@@ -80,6 +85,25 @@ export default function Home() {
     const interval = setInterval(() => setBlink((b) => !b), 530);
     return () => clearInterval(interval);
   }, []);
+
+  if (isGlobalLoading) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="animate-spin text-slate-500" size={24} />
+      </main>
+    );
+  }
+
+  if (!globalState?.isStarted) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white font-mono text-sm tracking-widest">
+          simulation not active
+        </div>
+      </main>
+    );
+  }
+
 
   return (
     <div

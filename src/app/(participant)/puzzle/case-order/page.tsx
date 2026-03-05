@@ -26,6 +26,18 @@ export default function AureaSectioPuzzle() {
         }
     }, [router]);
 
+    const { data: globalState } = api.global.getState.useQuery();
+
+    useEffect(() => {
+        if (globalState) {
+            if (!globalState.isStarted) {
+                router.push("/");
+            } else if (globalState.isMainframeBreakActive) {
+                router.push("/265616b");
+            }
+        }
+    }, [globalState, router]);
+
     const { data: puzzles, isLoading: puzzlesLoading } = api.puzzle.getPuzzles.useQuery(
         { teamId: teamId ?? "" },
         { enabled: !!teamId }

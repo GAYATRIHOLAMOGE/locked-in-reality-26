@@ -12,6 +12,8 @@ export default function RealLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const { data: globalState, isLoading: isGlobalLoading } = api.global.getState.useQuery();
+
   const loginMutation = api.team.login.useMutation({
     onSuccess: (data) => {
       localStorage.setItem("teamId", data.id);
@@ -26,6 +28,24 @@ export default function RealLoginPage() {
     setError("");
     loginMutation.mutate({ name, password });
   };
+
+  if (isGlobalLoading) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="animate-spin text-slate-500" size={24} />
+      </main>
+    );
+  }
+
+  if (!globalState?.isStarted) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white font-mono text-sm tracking-widest">
+          simulation yet to start
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">

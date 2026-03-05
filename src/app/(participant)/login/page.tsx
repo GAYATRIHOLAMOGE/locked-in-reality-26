@@ -1,11 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { api } from "@/trpc/react";
+import { Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const { data: globalState, isLoading: isGlobalLoading } = api.global.getState.useQuery();
+
+  if (isGlobalLoading) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <Loader2 className="animate-spin text-slate-500" size={24} />
+      </main>
+    );
+  }
+
+  if (!globalState?.isStarted) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white font-mono text-sm tracking-widest">
+          simulation yet to start
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-grid flex items-center justify-center p-6">

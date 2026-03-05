@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
-import { Shield, Plus, Trash2, Loader2, Users, Trophy, RefreshCw, LogOut } from "lucide-react";
+import { Shield, Plus, Trash2, Loader2, Users, Trophy, RefreshCw, LogOut, Play, Square } from "lucide-react";
 
 export default function AdminPanel() {
     const router = useRouter();
@@ -13,6 +13,8 @@ export default function AdminPanel() {
     const [newName, setNewName] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [createMsg, setCreateMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
+    const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
     useEffect(() => {
         const pass = sessionStorage.getItem("adminPass");
@@ -28,6 +30,50 @@ export default function AdminPanel() {
         { adminPassword: adminPass },
         { enabled: isAuthed && !!adminPass }
     );
+
+    const { data: globalState, refetch: refetchGlobal } = api.global.getState.useQuery(undefined, {
+        enabled: isAuthed,
+    });
+
+    const toggleSimulation = api.admin.toggleSimulation.useMutation({
+        onSuccess: () => {
+            refetchGlobal();
+        }
+    });
+
+    const toggleMainframeBreak = api.admin.toggleMainframeBreak.useMutation({
+        onSuccess: () => {
+            refetchGlobal();
+        }
+    });
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+
+        if (globalState?.isStarted && globalState.startedAt) {
+            interval = setInterval(() => {
+                const now = new Date().getTime();
+                const start = new Date(globalState.startedAt!).getTime();
+                const diff = (start + 2 * 60 * 60 * 1000) - now;
+
+                if (diff <= 0) {
+                    setTimeLeft("00:00:00");
+                } else {
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    setTimeLeft(
+                        `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+                    );
+                }
+            }, 1000);
+        } else {
+            setTimeLeft(null);
+        }
+
+        return () => clearInterval(interval);
+    }, [globalState]);
 
     const createTeam = api.admin.createTeam.useMutation({
         onSuccess: (data) => {
@@ -61,7 +107,7 @@ export default function AdminPanel() {
         <main className="min-h-screen bg-slate-950 text-slate-200 p-6">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-10">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl">
                             <Shield className="text-amber-400" size={22} />
@@ -71,7 +117,50 @@ export default function AdminPanel() {
                             <p className="text-xs text-slate-500">Locked In Reality</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* Mainframe Break Control */}
+
+                        {/* Simulation Control */}
+                        <div className="flex items-center gap-3 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 mr-2">
+                            {globalState?.isStarted ? (
+                                <>
+                                    <div className="flex flex-col text-right">
+                                        <span className="text-[10px] text-emerald-400 font-bold tracking-wider">SIMULATION RUNNING</span>
+                                        <span className="text-xs font-mono font-bold text-white">{timeLeft ?? "00:00:00"}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            if (confirm("Stop simulation? This freezes the current timer and locks out teams!")) {
+                                                toggleSimulation.mutate({ adminPassword: adminPass, start: false });
+                                            }
+                                        }}
+                                        disabled={toggleSimulation.isPending}
+                                        className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 p-1.5 rounded-md transition-colors"
+                                        title="Stop Simulation"
+                                    >
+                                        {toggleSimulation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} />}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-xs text-rose-400 font-bold tracking-wider">SIMULATION STOPPED</span>
+                                    <button
+                                        onClick={() => {
+                                            if (confirm("Start simulation? This will begin the 2 hour countdown immediately!")) {
+                                                toggleSimulation.mutate({ adminPassword: adminPass, start: true });
+                                            }
+                                        }}
+                                        disabled={toggleSimulation.isPending}
+                                        className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-md transition-colors flex items-center gap-2 text-xs font-bold"
+                                    >
+                                        {toggleSimulation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+                                        START
+                                    </button>
+                                </>
+                            )}
+                        </div>
+
                         <button
                             onClick={() => refetch()}
                             className="flex items-center gap-2 text-xs text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-lg transition-colors"
@@ -187,6 +276,57 @@ export default function AdminPanel() {
                         ) : (
                             <p className="text-slate-600 text-sm text-center py-8">No teams yet.</p>
                         )}
+                    </div>
+                    <div>
+
+                        <div className="flex flex-col items-center gap-3 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 mr-2">
+                            <div className="flex flex-col gap-1">
+                                <span className={`text-[10px] font-bold tracking-wider ${globalState?.isMainframeBreakActive ? 'text-red-400 animate-pulse' : 'text-slate-500'}`}>
+                                    MAINFRAME EVENT
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-row gap-2">
+                                        <p>Time: </p>
+                                        <input
+                                            type="number"
+                                            title="Duration (mins)"
+                                            placeholder="Min"
+                                            className="w-10 bg-black border border-slate-700 text-[10px] px-1 rounded"
+                                            defaultValue={globalState?.mainframeBreakDurationMins ?? 15}
+                                            id="mb-duration"
+                                        /></div>
+                                    <div className="flex flex-row gap-2">
+                                        <p>Number of cubes: </p>
+                                        <input
+                                            type="number"
+                                            title="Correct Ans"
+                                            placeholder="Ans"
+                                            className="w-10 bg-black border border-slate-700 text-[10px] px-1 rounded"
+                                            defaultValue={globalState?.mainframeBreakCorrectValue ?? 14}
+                                            id="mb-answer"
+                                        /></div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const active = !globalState?.isMainframeBreakActive;
+                                    const dur = parseInt((document.getElementById('mb-duration') as HTMLInputElement).value);
+                                    const ans = parseInt((document.getElementById('mb-answer') as HTMLInputElement).value);
+                                    if (confirm(`${active ? 'Start' : 'Stop'} Mainframe Break event?`)) {
+                                        toggleMainframeBreak.mutate({
+                                            adminPassword: adminPass,
+                                            active,
+                                            durationMins: dur,
+                                            correctValue: ans
+                                        });
+                                    }
+                                }}
+                                disabled={toggleMainframeBreak.isPending}
+                                className={`${globalState?.isMainframeBreakActive ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'} px-3 py-1.5 rounded-md transition-colors text-[10px] font-bold`}
+                            >
+                                {toggleMainframeBreak.isPending ? <Loader2 size={12} className="animate-spin" /> : (globalState?.isMainframeBreakActive ? 'STOP' : 'BREAK SERVER')}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
