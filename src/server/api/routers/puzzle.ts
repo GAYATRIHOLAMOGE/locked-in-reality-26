@@ -12,12 +12,28 @@ const PUZZLES = [
         order: 1,
     },
     {
+        id: "word-search-countries",
+        slug: "word-search-countries",
+        name: "Word Search: Countries of the World",
+        solution: "BRAZIL,CANADA,FRANCE,GERMANY,INDIA,JAPAN,MEXICO,NIGERIA,RUSSIA,SPAIN",
+        points: 100,
+        order: 2,
+    },
+    {
         id: "from-origin",
         slug: "from-origin",
         name: "From Origin",
         solution: "3,9 and 9,14",
         points: 20,
-        order: 2,
+        order: 3,
+    },
+    {
+        id: "hangman-responsibility",
+        slug: "hangman-responsibility",
+        name: "Hangman: Guess the Word",
+        solution: "RESPONSIBILITY",
+        points: 100,
+        order: 4,
     },
     {
         id: "secret-salad",
@@ -25,7 +41,7 @@ const PUZZLES = [
         name: "Secret Salad",
         solution: "I CAME, I SAW, I CONQUERED",
         points: 30,
-        order: 3,
+        order: 5,
     },
     {
         id: "dit-dah",
@@ -33,7 +49,7 @@ const PUZZLES = [
         name: "Dit Dah",
         solution: "KEYB",
         points: 40,
-        order: 4,
+        order: 6,
     },
     {
         id: "case-order",
@@ -41,7 +57,15 @@ const PUZZLES = [
         name: "Case Order",
         solution: "312105",
         points: 50,
-        order: 5,
+        order: 7,
+    },
+    {
+        id: "sudoku",
+        slug: "sudoku",
+        name: "Sudoku",
+        solution: "534678912672195348198342567859761423426853791713924856961537284287419635345286179",
+        points: 40,
+        order: 8,
     },
 ];
 
